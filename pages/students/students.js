@@ -145,6 +145,17 @@ const fetchStudents = () => {
 
 return(
 <Layout>
+
+<div>
+      {/* Alert message */}
+        {showAlert && (
+            <div className="fixed top-4 z-50 right-4 p-4 bg-blue-500 text-white rounded-md shadow-lg transition duration-500 ease-in-out">
+            New student added!
+            </div>
+        )}
+      {/* Your form and other components */}
+      {/* ... */}
+</div>
     <div class="flex justify-between items-center px-2">
         <h2 class="text-3xl font-bold text-slate-700">Student Database</h2>
         <a  data-hs-overlay="#hs-modal-signup" class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800" href="#">
@@ -343,7 +354,7 @@ return(
                     <td className="h-px w-px whitespace-nowrap">
                         <div className="pl-6 py-2">
                         <label htmlFor="hs-at-with-checkboxes-1" className="flex">
-                        <input type="checkbox" className="shrink-0 border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1"/>
+                        <input type="checkbox" className="shrink-0 bg-white border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1"/>
                         <span className="sr-only">Checkbox</span>
                         </label>
                         </div>
@@ -592,7 +603,7 @@ return(
                     <td className="h-px w-px whitespace-nowrap">
                         <div className="pl-6 py-2">
                         <label htmlFor="hs-at-with-checkboxes-1" className="flex">
-                        <input type="checkbox" className="shrink-0 border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1"/>
+                        <input type="checkbox" className="shrink-0 bg-white border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1"/>
                         <span className="sr-only">Checkbox</span>
                         </label>
                         </div>
@@ -929,11 +940,9 @@ return(
         Manage your name, password and account settings.
         </p>
         </div>
-
         <div class="mt-5">
          {/* <!-- Form --> */}
-        
-         <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <div className="col-span-3">
             <label className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
@@ -944,7 +953,7 @@ return(
 
         <div className="col-span-9">
             <div className="flex items-center gap-5">
-            <img className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800" src="../assets/img/160x160/img1.jpg" alt="Image Description"/>
+            <img className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800" src="/man.png" alt="Image Description"/>
             <div className="flex gap-x-2">
                 <div>
                     <button type="button" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
@@ -960,6 +969,30 @@ return(
         </div>
         {/* <!-- End Col --> */}
 
+
+        {/* <div className="col-span-9">
+            <div className="flex items-center gap-5">
+            <img className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800" src="/man.png" alt="Image Description"/>
+            <div className="flex gap-x-2">
+                <div>
+                <div className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+                <label className="relative flex items-center">
+
+                <svg className="w-3 h-3 absolute right-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                </svg>
+                    <input type="file" placeholder="Upload photo" className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-blue-700
+                    hover:file:bg-violet-100" />
+                </label>
+                </div></div>
+            </div>
+            </div>
+        </div>
+        <!-- End Col --> */}
+
         <div className="col-span-3">
             <label htmlFor="af-account-full-name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
             Full name
@@ -967,8 +1000,8 @@ return(
         </div>
         <div className="col-span-9">
             <div className="sm:flex">
-            <input value={fname} onChange={(e) => setFName(e.target.value)} name="name" id="af-account-full-name" type="text" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Maria"/>
-            <input value={lname} onChange={(e) => setLName(e.target.value)} type="text" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Boone"/>
+            <input required value={fname} onChange={(e) => setFName(e.target.value)} name="name" id="af-account-full-name" type="text" className="py-2 px-3 pr-11 block w-full  text-gray-900 bg-white  border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-50 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Maria"/>
+            <input required value={lname} onChange={(e) => setLName(e.target.value)} type="text" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 text-gray-900 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Boone"/>
             </div>
         </div>
         {/* <!-- End Col --> */}
@@ -980,7 +1013,7 @@ return(
         </div>
         <div className="col-span-9">
             <div className="sm:flex">
-            <input value={age} onChange={(e) => setAge(e.target.value)} name="phoneNumber" id="af-account-phone" type="number" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 text-gray-800 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Enter Age"/>
+            <input value={age} onChange={(e) => setAge(e.target.value)} name="phoneNumber" id="af-account-phone" type="number" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 text-gray-800 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Enter Age"/>
             </div>
         </div>
         {/* <!-- End Col --> */}
@@ -988,18 +1021,22 @@ return(
 
 
         <div className="col-span-3">
-            <label htmlFor="af-account-full-name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            <label htmlFor="af-account-class" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
             Grade/Class
             </label>
         </div>
         <div className="col-span-9">
             <div className="sm:flex">
-            <select value={grade} onChange={(e) => setGrade(e.target.value)} id="af-submit-app-category" class="py-2 px-3 pr-9 block w-full bg-white border text-gray-500 border-gray-200 shadow-sm rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
-            <option selected>Select a category</option>
-            <option value="">Select Grade/Class</option>
-            <option value="1">Grade 1</option>
-            <option value="2">Grade 2</option>
-            <option value="3">Grade 3</option>
+            <select value={grade} onChange={(e) => setGrade(e.target.value)} id="af-submit-app-category" class="py-2 px-3 pr-9 block w-full bg-white border text-gray-500 border-gray-200 shadow-sm rounded-lg text-sm focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <option selected value="">Select Grade/Class</option>
+            <option value="Grade 1">Grade 1</option>
+            <option value="Grade 2">Grade 2</option>
+            <option value="Grade 3">Grade 3</option>
+            <option value="Grade 4">Grade 4</option>
+            <option value="Grade 5">Grade 5</option>
+            <option value="Grade 6">Grade 6</option>
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
             </select>
         </div>
         </div>
@@ -1016,7 +1053,7 @@ return(
         </div>
         <div className="col-span-9">
             <div className="sm:flex">
-            <input  value={phone} onChange={(e) => setPhone(e.target.value)} name="phoneNumber" id="af-account-phone" type="text" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="+x(xxx)xxx-xx-xx"/>
+            <input  value={phone} onChange={(e) => setPhone(e.target.value)} name="phoneNumber" id="af-account-phone" type="text" className="py-2 px-3 pr-11 block w-full text-gray-900 bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="+x(xxx)xxx-xx-xx"/>
             </div>
         </div>
         {/* <!-- End Col --> */}
@@ -1033,7 +1070,7 @@ return(
 
 
         <div className="col-span-9">
-            <input  value={email} onChange={(e) => setEmail(e.target.value)} id="af-account-email" type="email" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="maria@site.com"/>
+            <input  value={email} onChange={(e) => setEmail(e.target.value)} id="af-account-email" type="email" className="py-2 px-3 pr-11 block w-full text-gray-900 bg-white border border-gray-200 shadow-sm text-sm rounded-lg focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="maria@site.com"/>
         </div>
 
         <div className="col-span-3">
@@ -1042,30 +1079,52 @@ return(
             </label>
         </div> 
         <div className="col-span-9">
-            <div className="sm:flex">
-            <label htmlFor="af-account-gender-checkbox" className="flex py-2 px-3 block w-full border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
-                <input value="Male" onChange={(e) => setGender(e.target.value)} type="radio" name="af-account-gender-checkbox" className="shrink-0 mt-0.5 bg-white border border-gray-200 rounded-full text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="af-account-gender-checkbox" />
-                <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Male</span>
+        <div className="sm:flex">
+            <label htmlFor="af-account-gender-checkbox" className="flex py-2 px-3 block w-full bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <input
+                value="Male"
+                onChange={(e) => setGender(e.target.value)}
+                type="radio"
+                name="af-account-gender-checkbox"
+                className="shrink-0 mt-0.5 bg-white border border-gray-200 rounded-full text-blue-600 pointer-events-none focus:outline-none checked:bg-blue-500 checked:border-blue-500 focus:ring-offset-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                id="af-account-gender-checkbox"
+            />
+            <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Male</span>
             </label>
 
-            <label htmlFor="af-account-gender-checkbox-female" className="flex py-2 px-3 block w-full border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
-                <input value="Female" onChange={(e) => setGender(e.target.value)} type="radio" name="af-account-gender-checkbox-female" className="shrink-0 mt-0.5 bg-white border border-gray-200 checked:bg-blue-500 checked:border-blue-500 rounded-full text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="af-account-gender-checkbox-female"/>
-                <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Female</span>
+            <label htmlFor="af-account-gender-checkbox-female" className="flex py-2 px-3 block w-full border bg-white border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <input
+                value="Female"
+                onChange={(e) => setGender(e.target.value)}
+                type="radio"
+                name="af-account-gender-checkbox-female"
+                className="shrink-0 mt-0.5 bg-white border border-gray-200 checked:bg-blue-500 checked:border-blue-500 rounded-full text-blue-600 pointer-events-none focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                id="af-account-gender-checkbox-female"
+            />
+            <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Female</span>
             </label>
 
-            <label htmlFor="af-account-gender-checkbox-other" className="flex py-2 px-3 block w-full border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
-                <input value="other" onChange={(e) => setGender(e.target.value)} type="radio" name="af-account-gender-checkbox-other" className="shrink-0 mt-0.5 bg-white border border-gray-200 rounded-full text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="af-account-gender-checkbox-other"/>
-                <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Other</span>
+            <label htmlFor="af-account-gender-checkbox-other" className="flex py-2 px-3 block w-full border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <input
+                value="other"
+                onChange={(e) => setGender(e.target.value)}
+                type="radio"
+                name="af-account-gender-checkbox-other"
+                className="shrink-0 mt-0.5 bg-white border border-gray-200 rounded-full text-blue-600 pointer-events-none focus:outline-non dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                id="af-account-gender-checkbox-other"
+            />
+            <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Other</span>
             </label>
-            </div>
-        </div> 
+        </div>
+        </div>
+
         <div className="col-span-3">
             <label htmlFor="af-account-bio" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
             Address
             </label>
         </div>
         <div className="col-span-9">
-            <input  value={address} onChange={(e) => setAddress(e.target.value)} id="af-account-bio" type="address" className="py-2 px-3 block w-full bg-white border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" rows={6} placeholder="Type your message..."/>
+            <input  value={address} onChange={(e) => setAddress(e.target.value)} id="af-account-bio" type="address" className="py-2 px-3 block w-full text-gray-900 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" rows={6} placeholder="Add your location"/>
         </div>
         {/* <!-- End Col --> */}
         <div className="col-span-3">
@@ -1074,7 +1133,7 @@ return(
             </label>
         </div>
         <div className="col-span-9">
-            <textarea value={bio} onChange={(e) => setBio(e.target.value)} id="af-account-bio" className="py-2 px-3 block w-full bg-white border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" rows={6} placeholder="Type your message..."></textarea>
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} id="af-account-bio" className="py-2 px-3 block w-full bg-white border text-gray-900 border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" rows={6} placeholder="Type your message..."></textarea>
         </div>
         {/* <!-- End Col --> */}
         </div>
@@ -1095,6 +1154,9 @@ return(
     </div>
 </div>
 </div>
+
+
+
 </Layout>
     )
 }

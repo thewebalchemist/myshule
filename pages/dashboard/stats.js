@@ -9,7 +9,7 @@ const Stats = () => {
   {/* <!-- Grid --> */}
 <div class="grid md:grid-cols-4 border border-gray-200 shadow-sm rounded-xl overflow-hidden dark:border-gray-700">
 {/* <!-- Card --> */}
-<a class="block p-4 md:p-5 relative bg-white hover:bg-gray-50 before:absolute before:top-0 before:left-0 before:w-full before:h-px md:before:w-px md:before:h-full before:bg-gray-200 before:first:bg-transparent dark:bg-slate-900 dark:hover:bg-slate-800 dark:before:bg-gray-700" href="#">
+<a  href="/students/students" class="block p-4 md:p-5 relative bg-white hover:bg-gray-50 before:absolute before:top-0 before:left-0 before:w-full before:h-px md:before:w-px md:before:h-full before:bg-gray-200 before:first:bg-transparent dark:bg-slate-900 dark:hover:bg-slate-800 dark:before:bg-gray-700">
     <div class="flex md:grid lg:flex gap-y-3 gap-x-5">
     <span>
         <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-300/30">
@@ -43,7 +43,7 @@ const Stats = () => {
 {/* <!-- End Card --> */}
 
 {/* <!-- Card --> */}
-<a class="block p-4 md:p-5 relative bg-white hover:bg-gray-50 before:absolute before:top-0 before:left-0 before:w-full before:h-px md:before:w-px md:before:h-full before:bg-gray-200 before:first:bg-transparent dark:bg-slate-900 dark:hover:bg-slate-800 dark:before:bg-gray-700" href="#">
+<a href="/teachers/teachers" class="block p-4 md:p-5 relative bg-white hover:bg-gray-50 before:absolute before:top-0 before:left-0 before:w-full before:h-px md:before:w-px md:before:h-full before:bg-gray-200 before:first:bg-transparent dark:bg-slate-900 dark:hover:bg-slate-800 dark:before:bg-gray-700" >
     <div class="flex md:grid lg:flex gap-y-3 gap-x-5">
     <span>
         <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-300/30">

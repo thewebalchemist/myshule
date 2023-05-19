@@ -1,9 +1,159 @@
-import { FaUserGraduate, FaPhone, FaCommentAlt} from "react-icons/fa";
+import { FaUserGraduate, FaPhone, FaCommentAlt, FaUserPlus} from "react-icons/fa";
+import { useEffect, useState } from "react";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Filler,
+    Legend,
+  } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import { faker } from '@faker-js/faker';
 
+ChartJS.register(
+CategoryScale,
+LinearScale,
+PointElement,
+LineElement,
+Title,
+Tooltip,
+Filler,
+Legend
+);
 
+export const options = {
+responsive: true,
+plugins: {
+    legend: {
+    position: 'top',
+    },
+},
+};
+
+const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export const data = {
+labels,
+datasets: [
+    {
+    fill: true,
+    label: 'Grades out of 100',
+    data: labels.map(() => faker.datatype.number({ min: 20, max: 100 })),
+    borderColor: 'rgb(53, 162, 235)',
+    backgroundColor: 'rgba(53, 162, 235, 0.5)',
+    },
+],
+};
 const Tables = () => {
+
+    const [fname, setFName] = useState("");
+const [lname, setLName] = useState("");
+const [age, setAge] = useState("");
+const [grade, setGrade] = useState("");
+const [phone, setPhone] = useState("");
+const [email, setEmail] = useState("");
+const [gender, setGender] = useState('');
+const [address, setAddress] = useState("");
+const [bio, setBio] = useState("");
+const [showAlert, setShowAlert] = useState(false);
+
+const handleSubmit = (e) => {
+e.preventDefault();
+const newStudent = { fname, lname, grade, phone, email, address, gender, age, bio };
+
+fetch("/api/students", {
+method: "POST",
+headers: {
+    "Content-Type": "application/json",
+},
+body: JSON.stringify(newStudent),
+})
+.then((response) => response.json())
+.then((data) => {
+    console.log("New student added:", data);
+    // Clear form fields
+    setFName("");
+    setLName("");
+    setAge("");
+    setPhone("");
+    setEmail("");
+    setGrade("");
+    setGender("");
+    setAddress("");
+    setBio("");
+    // Show alert
+    setShowAlert(true);
+    // Refresh page after 3 seconds
+    setTimeout(() => {
+    window.location.reload();
+    }, 1500);
+    console.log(`New student added: { id: ${data.id}, name: "${data.name}", grade: "${data.grade}", age: ${data.age} }`);
+});
+};
+const [students, setStudents] = useState([]);
+const [selectedStudent, setSelectedStudent] = useState(null);
+
+useEffect(() => {
+fetchStudents();
+}, []);
+
+const handleEdit = (student) => {
+setSelectedStudent(student);
+};
+
+const handleDelete = (student) => {
+// Delete logic
+};
+
+const handleSave = (updatedStudent) => {
+fetch("/api/students", {
+method: "PUT",
+headers: {
+    "Content-Type": "application/json",
+},
+body: JSON.stringify(updatedStudent),
+})
+.then((response) => response.json())
+.then((data) => {
+    console.log(data.message);
+    // Refresh students list
+    fetchStudents();
+    setSelectedStudent(null);
+});
+};
+
+const fetchStudents = () => {
+fetch("/api/students")
+.then((response) => response.json())
+.then((data) => setStudents(data));
+};
+const [circumference, setCircumference] = useState(0);
+const TotalClasses = 305;
+const AttendedClasses = 280;
+const percentage = (AttendedClasses/TotalClasses)*100;
+const Percent = Math.round(percentage);
+useEffect(() => {
+  setCircumference(50 * 2 * Math.PI);
+}, []);
+
+
+
     return(
         <main>
+            <div>
+                {/* Alert message */}
+                    {showAlert && (
+                        <div className="fixed top-4 z-50 right-4 p-4 bg-blue-500 text-white rounded-md shadow-lg transition duration-500 ease-in-out">
+                        New student added!
+                        </div>
+                    )}
+                {/* Your form and other components */}
+                {/* ... */}
+            </div>
             <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-2 lg:py-14 mx-auto">
             {/* <!-- Card --> */}
             <div className="flex flex-col">
@@ -131,11 +281,9 @@ const Tables = () => {
                                 </div>
                             </div>
                             <div class="inline-flex gap-x-2">
-                            <a class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800" href="#">
-                                <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M2.63452 7.50001L13.6345 7.5M8.13452 13V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                                Add
+                            <a  data-hs-overlay="#hs-modal-signup" class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800" href="#">
+                                        <FaUserPlus className="text-white text-sm" />
+                                        Add
                             </a>
                         </div>
                         </div>
@@ -211,7 +359,8 @@ const Tables = () => {
                         </thead>
 
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr>
+                        {students.map((student) => (
+                        <tr  key={student.id}>
                             <td className="h-px w-px whitespace-nowrap">
                                 <div className="pl-6 py-2">
                                 <label htmlFor="hs-at-with-checkboxes-1" className="flex">
@@ -222,7 +371,7 @@ const Tables = () => {
                             </td>
                             <td className="h-px w-px whitespace-nowrap">
                                 <div className="pr-6 py-2">
-                                <a className="text-sm text-blue-600 decoration-2 hover:underline dark:text-blue-500" href="#">#35463</a>
+                                <a className="text-sm text-blue-600 decoration-2 hover:underline dark:text-blue-500" href="#">#{student.id}</a>
                                 </div>
                             </td>
                             <td class="h-px w-px whitespace-nowrap">
@@ -230,7 +379,7 @@ const Tables = () => {
                                 <div class="flex items-center gap-x-3">
                                 <img class="inline-block h-[2.375rem] w-[2.375rem] rounded-full" src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description"/>
                                 <div class="grow">
-                                    <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">Christina Bersh</span>
+                                    <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">{student.fname} {student.lname}</span>
                                 </div>
                                 </div>
                             </div>
@@ -239,18 +388,18 @@ const Tables = () => {
                             <td className="h-px w-px whitespace-nowrap">
                                 <div className="px-6 py-2">
                                 <span className="inline-flex items-center gap-1.5 py-0.5 px-2 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                Grade 8
+                                {student.grade}
                                 </span>
                                 </div>
                             </td>
                             <td className="h-px w-px whitespace-nowrap">
                                 <div className="px-6 py-2">
-                                <span className="text-sm text-gray-600 dark:text-gray-400 items-center">14</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400 items-center">{student.age}</span>
                                 </div>
                             </td>
                             <td className="h-px w-px whitespace-nowrap text-left">
                                 <div className="px-6 py-2 ">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Male</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{student.gender}</span>
                                 </div>
                             </td>
                             <td class="h-px w-px whitespace-nowrap">
@@ -334,8 +483,9 @@ const Tables = () => {
                                 </div>
                             </td>
                         </tr>
+                        ))}
                         </tbody>
-                    </table>
+                        </table>
                     {/* <!-- End Table -->
 
                     <!-- Footer --> */}
@@ -386,142 +536,389 @@ const Tables = () => {
             </div>
             {/* <!-- End Table Section --> */}
 
-            {/* <!-- Modal --> */}
-            <div id="hs-ai-invoice-modal" class="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
-            <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-                <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-gray-800">
-                <div class="relative overflow-hidden min-h-[8rem] bg-gray-900 text-center rounded-t-xl">
-                    {/* <!-- Close Button --> */}
-                    <div class="absolute top-2 right-2">
-                    <button type="button" class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all text-sm dark:focus:ring-gray-700 dark:focus:ring-offset-gray-800" data-hs-overlay="#hs-bg-gray-on-hover-cards" data-hs-remove-element="#hs-ai-modal">
-                        <span class="sr-only">Close</span>
-                        <svg class="w-3.5 h-3.5" width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0.258206 1.00652C0.351976 0.912791 0.479126 0.860131 0.611706 0.860131C0.744296 0.860131 0.871447 0.912791 0.965207 1.00652L3.61171 3.65302L6.25822 1.00652C6.30432 0.958771 6.35952 0.920671 6.42052 0.894471C6.48152 0.868271 6.54712 0.854471 6.61352 0.853901C6.67992 0.853321 6.74572 0.865971 6.80722 0.891111C6.86862 0.916251 6.92442 0.953381 6.97142 1.00032C7.01832 1.04727 7.05552 1.1031 7.08062 1.16454C7.10572 1.22599 7.11842 1.29183 7.11782 1.35822C7.11722 1.42461 7.10342 1.49022 7.07722 1.55122C7.05102 1.61222 7.01292 1.6674 6.96522 1.71352L4.31871 4.36002L6.96522 7.00648C7.05632 7.10078 7.10672 7.22708 7.10552 7.35818C7.10442 7.48928 7.05182 7.61468 6.95912 7.70738C6.86642 7.80018 6.74102 7.85268 6.60992 7.85388C6.47882 7.85498 6.35252 7.80458 6.25822 7.71348L3.61171 5.06702L0.965207 7.71348C0.870907 7.80458 0.744606 7.85498 0.613506 7.85388C0.482406 7.85268 0.357007 7.80018 0.264297 7.70738C0.171597 7.61468 0.119017 7.48928 0.117877 7.35818C0.116737 7.22708 0.167126 7.10078 0.258206 7.00648L2.90471 4.36002L0.258206 1.71352C0.164476 1.61976 0.111816 1.4926 0.111816 1.36002C0.111816 1.22744 0.164476 1.10028 0.258206 1.00652Z" fill="currentColor"/>
-                        </svg>
+            
+    {/* <!-- Modal --> */}
+    <div id="hs-ai-invoice-modal" class="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+        <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-gray-800">
+        <div class="relative overflow-hidden min-h-[8rem] bg-gray-900 text-center rounded-t-xl">
+            {/* <!-- Close Button --> */}
+            <div class="absolute top-2 right-2">
+            <button type="button" class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all text-sm dark:focus:ring-gray-700 dark:focus:ring-offset-gray-800" data-hs-overlay="#hs-bg-gray-on-hover-cards" data-hs-remove-element="#hs-ai-modal">
+                <span class="sr-only">Close</span>
+                <svg class="w-3.5 h-3.5" width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0.258206 1.00652C0.351976 0.912791 0.479126 0.860131 0.611706 0.860131C0.744296 0.860131 0.871447 0.912791 0.965207 1.00652L3.61171 3.65302L6.25822 1.00652C6.30432 0.958771 6.35952 0.920671 6.42052 0.894471C6.48152 0.868271 6.54712 0.854471 6.61352 0.853901C6.67992 0.853321 6.74572 0.865971 6.80722 0.891111C6.86862 0.916251 6.92442 0.953381 6.97142 1.00032C7.01832 1.04727 7.05552 1.1031 7.08062 1.16454C7.10572 1.22599 7.11842 1.29183 7.11782 1.35822C7.11722 1.42461 7.10342 1.49022 7.07722 1.55122C7.05102 1.61222 7.01292 1.6674 6.96522 1.71352L4.31871 4.36002L6.96522 7.00648C7.05632 7.10078 7.10672 7.22708 7.10552 7.35818C7.10442 7.48928 7.05182 7.61468 6.95912 7.70738C6.86642 7.80018 6.74102 7.85268 6.60992 7.85388C6.47882 7.85498 6.35252 7.80458 6.25822 7.71348L3.61171 5.06702L0.965207 7.71348C0.870907 7.80458 0.744606 7.85498 0.613506 7.85388C0.482406 7.85268 0.357007 7.80018 0.264297 7.70738C0.171597 7.61468 0.119017 7.48928 0.117877 7.35818C0.116737 7.22708 0.167126 7.10078 0.258206 7.00648L2.90471 4.36002L0.258206 1.71352C0.164476 1.61976 0.111816 1.4926 0.111816 1.36002C0.111816 1.22744 0.164476 1.10028 0.258206 1.00652Z" fill="currentColor"/>
+                </svg>
+            </button>
+            </div>
+            {/* <!-- End Close Button --> */}
+
+            {/* <!-- SVG Background Element --> */}
+            <figure class="absolute inset-x-0 bottom-0">
+            <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 1920 100.1">
+                <path fill="currentColor" class="fill-white dark:fill-gray-800" d="M0,0c0,0,934.4,93.4,1920,0v100.1H0L0,0z"></path>
+            </svg>
+            </figure>
+            {/* <!-- End SVG Background Element --> */}
+        </div>
+
+        <div class="relative z-10 -mt-12">
+            {/* <!-- Icon --> */}
+            <span class="mx-auto flex justify-center items-center w-[62px] h-[62px] rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
+            <img class="rounded-full" src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description"/>
+            </span>
+            {/* <!-- End Icon --> */}
+        </div>
+
+        {/* <!-- Body --> */}
+        <div class="p-4 sm:p-7 overflow-y-auto">
+            <div class="text-center">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                Berack Kaunda
+            </h3>
+            <p class="text-sm text-blue-600">
+                ID: #3682303
+            </p>
+            <div className="flex space-x-2 justify-center px-6 py-2">
+                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-300/30">
+                    <FaPhone className="text-gray-800 text-sm" />
+                </div>
+                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-300/30">
+                    <FaCommentAlt className="text-gray-800 text-sm" />
+                </div>
+            </div>
+        </div>
+        
+        *{/* <!-- Grid --> */}
+            <div class="mt-5 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-2 justify-center">
+            <div>
+                <span class="block text-xs uppercase text-gray-500">Class:</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">Grade 4</span>
+            </div>
+            {/* <!-- End Col --> */}
+
+            <div>
+                <span class="block text-xs uppercase text-gray-500">Gender:</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">Male</span>
+            </div>
+            {/* <!-- End Col --> */}
+
+            <div>
+                <span class="block text-xs uppercase text-gray-500">Age:</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">12</span>
+            </div>
+            {/* <!-- End Col --> */}
+
+            <div>
+                <span class="block text-xs uppercase text-gray-500">Address:</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">123 Main St, City, State</span>
+            </div>
+            {/* <!-- End Col --> */}
+
+            </div>
+            {/* <!-- End Grid --> */}
+
+            <div class="mt-5 sm:mt-10">
+                <h4 class="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">About</h4>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Sarah is a hardworking student who takes her studies seriously. 
+                She is always eager to participate in class discussions 
+                and is not afraid to ask questions when she doesn't understand something. 
+                Her positive attitude and enthusiasm inspire those around her.
+                </p>
+            </div>
+            {/* Student Productiviy/Attendance */}
+
+            <div class="mt-5 sm:mt-10">
+            <h4 class="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">Student Attendance</h4>   
+            <div className="flex items-center flex-wrap max-w-md px-10 bg-white border shadow-xl rounded-2xl h-20 mt-10">
+                <div className="flex items-center justify-center -m-6 overflow-hidden bg-white rounded-full">
+                    <svg className="w-32 h-32 transform translate-x-1 translate-y-1" aria-hidden="true">
+                    <circle
+                        className="text-gray-300"
+                        strokeWidth="10"
+                        stroke="currentColor"
+                        fill="transparent"
+                        r="50"
+                        cx="60"
+                        cy="60"
+                    />
+                    <circle
+                        className="text-red-600"
+                        strokeWidth="10"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={circumference - (Percent / 100) * circumference}
+                        strokeLinecap="round"
+                        stroke="currentColor"
+                        fill="transparent"
+                        r="50"
+                        cx="60"
+                        cy="60"
+                    />
+                    </svg>
+                    <span className="absolute text-2xl text-red-700">{`${Percent}%`}</span>
+                </div>
+                <p className="ml-10 font-medium text-gray-600 sm:text-xl">of classes</p>
+                <span className="ml-auto text-xl font-medium text-red-600 hidden sm:block">{`${AttendedClasses}/${TotalClasses}`}</span>
+                </div>
+                </div>
+
+
+                <div class="mt-5 sm:mt-10">
+                    <h4 class="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">Student Perfomance</h4>
+                    <Line options={options} data={data} />;
+                </div>
+
+                <div class="mt-5 sm:mt-10">
+                <h4 class="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">Students from same class</h4>  
+                <div className="flex items-center mt-8">
+                    <div className="flex -space-x-3">
+                        <img className="w-10 h-10 rounded-full border-2 border-white" src="/man.png" alt="Profile 1" />
+                        <img className="w-10 h-10 rounded-full border-2 border-white" src="/man.png" alt="Profile 2" />
+                        <img className="w-10 h-10 rounded-full border-2 border-white" src="/man.png" alt="Profile 3" />
+                        <img className="w-10 h-10 rounded-full border-2 border-white" src="/man.png" alt="Profile 3" />
+                        <img className="w-10 h-10 rounded-full border-2 border-white" src="/man.png" alt="Profile 3" />
+                    </div>
+                    <p className="ml-2 text-blue-600 font-semibold text-lg">+ 30 more</p>
+                </div>
+                </div>
+            </div>
+        {/* <!-- End Body --> */}
+        </div>
+    </div>
+    </div>
+    {/* <!-- End Modal --> */}
+
+
+{/* <!-- Add student Modal --> */}
+<div id="hs-modal-signup" class="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
+<div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="p-4 sm:p-7">
+    <div className="mb-8 text-center">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+        Create your student profile
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+        Manage your name, password and account settings.
+        </p>
+        </div>
+
+        
+<div class="mt-5">
+         {/* <!-- Form --> */}
+         <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-12 gap-4 sm:gap-6">
+        <div className="col-span-3">
+            <label className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Profile photo
+            </label>
+        </div>
+        {/* <!-- End Col --> */}
+
+        <div className="col-span-9">
+            <div className="flex items-center gap-5">
+            <img className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800" src="/man.png" alt="Image Description"/>
+            <div className="flex gap-x-2">
+                <div>
+                    <button type="button" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+                    <svg className="w-3 h-3" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                    </svg>
+                    Upload photo
                     </button>
-                    </div>
-                    {/* <!-- End Close Button --> */}
-
-                    {/* <!-- SVG Background Element --> */}
-                    <figure class="absolute inset-x-0 bottom-0">
-                    <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 1920 100.1">
-                        <path fill="currentColor" class="fill-white dark:fill-gray-800" d="M0,0c0,0,934.4,93.4,1920,0v100.1H0L0,0z"></path>
-                    </svg>
-                    </figure>
-                    {/* <!-- End SVG Background Element --> */}
-                </div>
-
-                <div class="relative z-10 -mt-12">
-                    {/* <!-- Icon --> */}
-                    <span class="mx-auto flex justify-center items-center w-[62px] h-[62px] rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27zm.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0l-.509-.51z"/>
-                        <path d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"/>
-                    </svg>
-                    </span>
-                    {/* <!-- End Icon --> */}
-                </div>
-
-                {/* <!-- Body --> */}
-                <div class="p-4 sm:p-7 overflow-y-auto">
-                    <div class="text-center">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        Invoice from Preline
-                    </h3>
-                    <p class="text-sm text-gray-500">
-                        Invoice #3682303
-                    </p>
-                    </div>
-
-                    {/* <!-- Grid --> */}
-                    <div class="mt-5 sm:mt-10 grid grid-cols-2 sm:grid-cols-3 gap-5">
-                    <div>
-                        <span class="block text-xs uppercase text-gray-500">Amount paid:</span>
-                        <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">$316.8</span>
-                    </div>
-                    {/* <!-- End Col --> */}
-
-                    <div>
-                        <span class="block text-xs uppercase text-gray-500">Date paid:</span>
-                        <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">April 22, 2020</span>
-                    </div>
-                    {/* <!-- End Col --> */}
-
-                    <div>
-                        <span class="block text-xs uppercase text-gray-500">Payment method:</span>
-                        <div class="flex items-center gap-x-2">
-                        <svg class="w-5 h-5" width="400" height="248" viewBox="0 0 400 248" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0)">
-                            <path d="M254 220.8H146V26.4H254V220.8Z" fill="#FF5F00"/>
-                            <path d="M152.8 123.6C152.8 84.2 171.2 49 200 26.4C178.2 9.2 151.4 0 123.6 0C55.4 0 0 55.4 0 123.6C0 191.8 55.4 247.2 123.6 247.2C151.4 247.2 178.2 238 200 220.8C171.2 198.2 152.8 163 152.8 123.6Z" fill="#EB001B"/>
-                            <path d="M400 123.6C400 191.8 344.6 247.2 276.4 247.2C248.6 247.2 221.8 238 200 220.8C228.8 198.2 247.2 163 247.2 123.6C247.2 84.2 228.8 49 200 26.4C221.8 9.2 248.6 0 276.4 0C344.6 0 400 55.4 400 123.6Z" fill="#F79E1B"/>
-                            </g>
-                            <defs>
-                            <clipPath id="clip0">
-                            <rect width="400" height="247.2" fill="white"/>
-                            </clipPath>
-                            </defs>
-                        </svg>
-                        <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">•••• 4242</span>
-                        </div>
-                    </div>
-                    {/* <!-- End Col --> */}
-                    </div>
-                    {/* <!-- End Grid --> */}
-
-                    <div class="mt-5 sm:mt-10">
-                    <h4 class="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">Summary</h4>
-
-                    <ul class="mt-3 flex flex-col">
-                        <li class="inline-flex items-center gap-x-2 py-3 px-4 text-sm border text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg dark:border-gray-700 dark:text-gray-200">
-                        <div class="flex items-center justify-between w-full">
-                            <span>Payment to Front</span>
-                            <span>$264.00</span>
-                        </div>
-                        </li>
-                        <li class="inline-flex items-center gap-x-2 py-3 px-4 text-sm border text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg dark:border-gray-700 dark:text-gray-200">
-                        <div class="flex items-center justify-between w-full">
-                            <span>Tax fee</span>
-                            <span>$52.8</span>
-                        </div>
-                        </li>
-                        <li class="inline-flex items-center gap-x-2 py-3 px-4 text-sm font-semibold bg-gray-50 border text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg dark:bg-slate-800 dark:border-gray-700 dark:text-gray-200">
-                        <div class="flex items-center justify-between w-full">
-                            <span>Amount paid</span>
-                            <span>$316.8</span>
-                        </div>
-                        </li>
-                    </ul>
-                    </div>
-
-                    {/* <!-- Button --> */}
-                    <div class="mt-5 flex justify-end gap-x-2">
-                    <a class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-gray-800 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800" href="#">
-                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                        </svg>
-                        Invoice PDF
-                    </a>
-                    <a class="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800" href="#">
-                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
-                        <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                        </svg>
-                        Print
-                    </a>
-                    </div>
-                    {/* <!-- End Buttons --> */}
-
-                    <div class="mt-5 sm:mt-10">
-                    <p class="text-sm text-gray-500">If you have any questions, please contact us at <a class="inline-flex items-center gap-x-1.5 text-blue-600 decoration-2 hover:underline font-medium" href="#">example@site.com</a> or call at <a class="inline-flex items-center gap-x-1.5 text-blue-600 decoration-2 hover:underline font-medium" href="tel:+1898345492">+1 898-34-5492</a></p>
-                    </div>
-                </div>
-                {/* <!-- End Body --> */}
                 </div>
             </div>
             </div>
-            {/* <!-- End Modal --> */}
+        </div>
+        {/* <!-- End Col --> */}
+
+
+        {/* <div className="col-span-9">
+            <div className="flex items-center gap-5">
+            <img className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800" src="/man.png" alt="Image Description"/>
+            <div className="flex gap-x-2">
+                <div>
+                <div className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+                <label className="relative flex items-center">
+
+                <svg className="w-3 h-3 absolute right-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                </svg>
+                    <input type="file" placeholder="Upload photo" className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-blue-700
+                    hover:file:bg-violet-100" />
+                </label>
+                </div></div>
+            </div>
+            </div>
+        </div>
+        <!-- End Col --> */}
+
+        <div className="col-span-3">
+            <label htmlFor="af-account-full-name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Full name
+            </label>
+        </div>
+        <div className="col-span-9">
+            <div className="sm:flex">
+            <input required value={fname} onChange={(e) => setFName(e.target.value)} name="name" id="af-account-full-name" type="text" className="py-2 px-3 pr-11 block w-full  text-gray-900 bg-white  border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:border-blue-50 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Maria"/>
+            <input required value={lname} onChange={(e) => setLName(e.target.value)} type="text" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 text-gray-900 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Boone"/>
+            </div>
+        </div>
+        {/* <!-- End Col --> */}
+
+        <div className="col-span-3">
+            <label htmlFor="af-account-full-name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Age
+            </label>
+        </div>
+        <div className="col-span-9">
+            <div className="sm:flex">
+            <input value={age} onChange={(e) => setAge(e.target.value)} name="phoneNumber" id="af-account-phone" type="number" className="py-2 px-3 pr-11 block w-full bg-white border border-gray-200 text-gray-800 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Enter Age"/>
+            </div>
+        </div>
+        {/* <!-- End Col --> */}
+
+
+
+        <div className="col-span-3">
+            <label htmlFor="af-account-class" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Grade/Class
+            </label>
+        </div>
+        <div className="col-span-9">
+            <div className="sm:flex">
+            <select value={grade} onChange={(e) => setGrade(e.target.value)} id="af-submit-app-category" class="py-2 px-3 pr-9 block w-full bg-white border text-gray-500 border-gray-200 shadow-sm rounded-lg text-sm focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <option selected value="">Select Grade/Class</option>
+            <option value="Grade 1">Grade 1</option>
+            <option value="Grade 2">Grade 2</option>
+            <option value="Grade 3">Grade 3</option>
+            <option value="Grade 4">Grade 4</option>
+            <option value="Grade 5">Grade 5</option>
+            <option value="Grade 6">Grade 6</option>
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
+            </select>
+        </div>
+        </div>
+        {/* <!-- End Col --> */}
+
+
+
+        <div className="col-span-3">
+            <div className="inline-block">
+            <label htmlFor="af-account-phone" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+                Phone
+            </label>
+            </div>
+        </div>
+        <div className="col-span-9">
+            <div className="sm:flex">
+            <input  value={phone} onChange={(e) => setPhone(e.target.value)} name="phoneNumber" id="af-account-phone" type="text" className="py-2 px-3 pr-11 block w-full text-gray-900 bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="+x(xxx)xxx-xx-xx"/>
+            </div>
+        </div>
+        {/* <!-- End Col --> */}
+
+        <div className="col-span-3">
+            <label htmlFor="af-account-email" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Email
+            </label>
+            <span className="text-sm text-gray-400 dark:text-gray-600">
+                (Optional)
+            </span>
+        </div>
+        {/* <!-- End Col --> */}
+
+
+        <div className="col-span-9">
+            <input  value={email} onChange={(e) => setEmail(e.target.value)} id="af-account-email" type="email" className="py-2 px-3 pr-11 block w-full text-gray-900 bg-white border border-gray-200 shadow-sm text-sm rounded-lg focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="maria@site.com"/>
+        </div>
+
+        <div className="col-span-3">
+            <label htmlFor="af-account-gender-checkbox" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Gender
+            </label>
+        </div> 
+        <div className="col-span-9">
+        <div className="sm:flex">
+            <label htmlFor="af-account-gender-checkbox" className="flex py-2 px-3 block w-full bg-white border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <input
+                value="Male"
+                onChange={(e) => setGender(e.target.value)}
+                type="radio"
+                name="af-account-gender-checkbox"
+                className="shrink-0 mt-0.5 bg-white border border-gray-200 rounded-full text-blue-600 pointer-events-none focus:outline-none checked:bg-blue-500 checked:border-blue-500 focus:ring-offset-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                id="af-account-gender-checkbox"
+            />
+            <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Male</span>
+            </label>
+
+            <label htmlFor="af-account-gender-checkbox-female" className="flex py-2 px-3 block w-full border bg-white border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <input
+                value="Female"
+                onChange={(e) => setGender(e.target.value)}
+                type="radio"
+                name="af-account-gender-checkbox-female"
+                className="shrink-0 mt-0.5 bg-white border border-gray-200 checked:bg-blue-500 checked:border-blue-500 rounded-full text-blue-600 pointer-events-none focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                id="af-account-gender-checkbox-female"
+            />
+            <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Female</span>
+            </label>
+
+            <label htmlFor="af-account-gender-checkbox-other" className="flex py-2 px-3 block w-full border border-gray-200 shadow-sm -mt-px -ml-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-l-lg sm:mt-0 sm:first:ml-0 sm:first:rounded-tr-none sm:last:rounded-bl-none sm:last:rounded-r-lg text-sm relative focus:z-10 focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+            <input
+                value="other"
+                onChange={(e) => setGender(e.target.value)}
+                type="radio"
+                name="af-account-gender-checkbox-other"
+                className="shrink-0 mt-0.5 bg-white border border-gray-200 rounded-full text-blue-600 pointer-events-none focus:outline-non dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                id="af-account-gender-checkbox-other"
+            />
+            <span className="text-sm text-gray-500 ml-3 dark:text-gray-400">Other</span>
+            </label>
+        </div>
+        </div>
+
+        <div className="col-span-3">
+            <label htmlFor="af-account-bio" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            Address
+            </label>
+        </div>
+        <div className="col-span-9">
+            <input  value={address} onChange={(e) => setAddress(e.target.value)} id="af-account-bio" type="address" className="py-2 px-3 block w-full text-gray-900 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" rows={6} placeholder="Add your location"/>
+        </div>
+        {/* <!-- End Col --> */}
+        <div className="col-span-3">
+            <label htmlFor="af-account-bio" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
+            BIO
+            </label>
+        </div>
+        <div className="col-span-9">
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} id="af-account-bio" className="py-2 px-3 block w-full bg-white border text-gray-900 border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-blue-50 focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" rows={6} placeholder="Type your message..."></textarea>
+        </div>
+        {/* <!-- End Col --> */}
+        </div>
+        {/* <!-- End Grid --> */}
+
+        <div className="mt-5 flex justify-end gap-x-2">
+        <button type="button" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+            Cancel
+        </button>
+        <button type="submit" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">
+            Save changes
+        </button>
+        </div>
+        </form>
+        {/* <!-- End Form --> */}
+        </div>
+    </div>
+    </div>
+</div>
+</div>
 </main>
     )
 }
