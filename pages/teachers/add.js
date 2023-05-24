@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import Layout from "../components/layout";
+import { firestore } from '../../firebase';
+import { storage } from '../../firebase';
 
 
 export default function AddTeacher() {
@@ -14,80 +16,65 @@ export default function AddTeacher() {
     const [experience, setExperience] = useState("");
     const [gender, setGender] = useState('');
     const [bio, setBio] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
     const [showAlert, setShowAlert] = useState(false);
 
-const handleSubmit = (e) => {
-    e.preventDefault();
-    const newTeacher = { fname, lname, grade, phone, email, subjects, qualifications, experience, gender, bio };
+    const handleProfileImageChange = (event) => {
+        const file = event.target.files[0];
+        setProfileImage(file);
+    };
 
-    fetch("/api/teachers", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(newTeacher),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log("New teacher added:", data);
-        // Clear form fields
-        setFName("");
-        setLName("");
-        setPhone("");
-        setEmail("");
-        setGrade("");
-        setGender("");
-        setSubjects("");
-        setQualifications("");
-        setExperience("");
-        setBio("");
-        // Show alert
-        setShowAlert(true);
-        // Refresh page after 3 seconds
-        setTimeout(() => {
-        window.location.reload();
-        }, 1500);
-    });
-};
 
-const [teachers, setTeachers] = useState([]);
-const [selectedTeacher, setSelectedTeacher] = useState(null);
-
-useEffect(() => {
-    fetchTeachers();
-}, []);
-
-const handleEdit = (teacher) => {
-    setSelectedTeacher(teacher);
-};
-
-const handleDelete = (teacher) => {
-    // Delete logic
-};
-
-const handleSave = (updatedTeacher) => {
-    fetch("/api/teachers", {
-    method: "PUT",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedTeacher),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log(data.message);
-        // Refresh teachers list
-        fetchTeachers();
-        setSelectedTeacher(null);
-    });
-};
-
-const fetchTeachers = () => {
-    fetch("/api/teachers")
-    .then((response) => response.json())
-    .then((data) => setTeachers(data));
-};
-
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+    
+        // Upload profile image to Firebase Storage
+        const imageRef = storage.ref().child(profileImage.name);
+        await imageRef.put(profileImage);
+        const imageUrlu = await imageRef.getDownloadURL();
+    
+    
+        const newTeacher = {
+            fname,
+            lname,
+            grade,
+            subjects,
+            qualifications,
+            experience,
+            phone,
+            email,
+            gender,
+            bio,
+            profileImage: imageUrlu,
+        };
+    
+        firestore
+            .collection('teachers')
+            .add(newTeacher)
+            .then((docRef) => {
+            console.log('New student added with ID: ', docRef.id);
+            // Clear form fields
+            setFName('');
+            setLName('');
+            setSubjects('');
+            setQualifications('');
+            setExperience('');
+            setPhone('');
+            setEmail('');
+            setGrade('');
+            setGender('');
+            setBio('');
+            // Show alert
+            setShowAlert(true);
+            // Refresh page after 3 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+            })
+            .catch((error) => {
+            console.error('Error adding teacher: ', error);
+            });
+        };
 return (
 <Layout>
 <div>
@@ -128,15 +115,11 @@ return (
             <div className="flex items-center gap-5">
             <img className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800" src="/man.png" alt="Image Description"/>
             <div className="flex gap-x-2">
-                <div>
-                    <button type="button" className="py-2 px-3 = inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
-                    <svg className="w-3 h-3" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                    </svg>
-                    Upload photo
+            <div>
+                    <button type="button" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+                    <input type="file" onChange={handleProfileImageChange} />
                     </button>
-                </div>
+            </div>
             </div>
             </div>
         </div>
