@@ -1,91 +1,61 @@
 import { useEffect, useState } from 'react';
 import Layout from "../components/layout";
+import { firestore } from '../../firebase';
 
 
 export default function AddStudent() {
 
-    const [fname, setFName] = useState("");
-    const [lname, setLName] = useState("");
-    const [age, setAge] = useState("");
-    const [grade, setGrade] = useState("");
-    const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
+    const [fname, setFName] = useState('');
+    const [lname, setLName] = useState('');
+    const [age, setAge] = useState('');
+    const [grade, setGrade] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
     const [gender, setGender] = useState('');
-    const [address, setAddress] = useState("");
-    const [bio, setBio] = useState("");
+    const [address, setAddress] = useState('');
+    const [bio, setBio] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
-const handleSubmit = (e) => {
+    const handleSubmit = (e) => {
     e.preventDefault();
-    const newStudent = { fname, lname, grade, phone, email, address, gender, age, bio };
+    const newStudent = {
+        fname,
+        lname,
+        age,
+        grade,
+        phone,
+        email,
+        gender,
+        address,
+        bio,
+    };
 
-    fetch("/api/students", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(newStudent),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log("New student added:", data);
+    firestore
+        .collection('students')
+        .add(newStudent)
+        .then((docRef) => {
+        console.log('New student added with ID: ', docRef.id);
         // Clear form fields
-        setFName("");
-        setLName("");
-        setAge("");
-        setPhone("");
-        setEmail("");
-        setGrade("");
-        setGender("");
-        setAddress("");
-        setBio("");
+        setFName('');
+        setLName('');
+        setAge('');
+        setPhone('');
+        setEmail('');
+        setGrade('');
+        setGender('');
+        setAddress('');
+        setBio('');
         // Show alert
         setShowAlert(true);
         // Refresh page after 3 seconds
         setTimeout(() => {
-        window.location.reload();
-        }, 1500);
-        console.log(`New student added: { id: ${data.id}, name: "${data.name}", grade: "${data.grade}", age: ${data.age} }`);
-    });
-};
-
-const [students, setStudents] = useState([]);
-const [selectedStudent, setSelectedStudent] = useState(null);
-
-useEffect(() => {
-    fetchStudents();
-}, []);
-
-const handleEdit = (student) => {
-    setSelectedStudent(student);
-};
-
-const handleDelete = (student) => {
-    // Delete logic
-};
-
-const handleSave = (updatedStudent) => {
-    fetch("/api/students", {
-    method: "PUT",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedStudent),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log(data.message);
-        // Refresh students list
-        fetchStudents();
-        setSelectedStudent(null);
-    });
-};
-
-const fetchStudents = () => {
-    fetch("/api/students")
-    .then((response) => response.json())
-    .then((data) => setStudents(data));
-};
+            window.location.reload();
+        }, 3000);
+        })
+        .catch((error) => {
+        console.error('Error adding student: ', error);
+        });
+    };
 
 return (
 <Layout>
