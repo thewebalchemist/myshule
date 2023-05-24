@@ -1,5 +1,6 @@
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
+import 'firebase/compat/storage';
 const firebaseConfig = {
     apiKey: "AIzaSyBVBBy9KHDQbMdhjB-iRHtX8KE1e4E6xDc",
     authDomain: "my-shulee.firebaseapp.com",
@@ -17,3 +18,4 @@ if (!firebase.apps.length) {
 
 // Export the Firestore instance
 export const firestore = firebase.firestore();
+export const storage = firebase.storage();
