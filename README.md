@@ -47,3 +47,6 @@ The School Management Dashboard is designed with simplicity, usability, and scal
 3. Charts and Visualization: The dashboard leverages charting libraries and visualization tools to present data in a visually appealing and easy-to-understand format. This enhances data analysis and decision-making capabilities.
 
 4. Authentication and Security: The system incorporates authentication mechanisms to ensure that only authorized users can access the dashboard and perform specific actions. This protects sensitive information and maintains data privacy.
+
+![The system design](system-design.png)
+
