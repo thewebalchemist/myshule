@@ -38,7 +38,7 @@ In addition to viewing data, you can easily add new students and teachers to the
 
 The School Management Dashboard is designed with simplicity, usability, and scalability in mind. The system architecture follows a client-server model, with the following components:
 
-1. Front-end: The user interface is built using modern web framework; NextJS. It provides an intuitive and responsive interface for users to interact with the dashboard.
+1. Front-end: The user interface is built using modern web framework; NextJS and TailwindCSS (Preline UI). It provides an intuitive and responsive interface for users to interact with the dashboard.
 
 
 
