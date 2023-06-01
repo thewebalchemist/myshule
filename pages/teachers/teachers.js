@@ -287,10 +287,10 @@ return(
                             </div>
                         </div>
                 </div>
-                <div className="flex flex-col items-center pb-10">
+                <div className="flex flex-col items-center py-10 px-2">
                 <img className="mb-3 w-20 h-20 rounded-full shadow-lg mx-auto" src={teacher.profileImage} alt="product designer"/>
                     <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">{teacher.fname} {teacher.lname}</h5>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{teacher.subjects}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{teacher.subjects}</span>
                     <div className="flex mt-4 space-x-3 md:mt-6">
                         <a  onClick={() => handleView(teacher)} href='#' className="inline-flex items-center px-4 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">View Profile</a>
                     

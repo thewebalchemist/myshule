@@ -139,33 +139,45 @@ firestore
 
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredStudents, setFilteredStudents] = useState([]);
+    
+    
     const fetchStudents = async () => {
-    try {
+        try {
         const querySnapshot = await firestore.collection('students').get();
-        const fetchedStudents = [];
-        for (const doc of querySnapshot.docs) {
-        const studentData = doc.data();
-        const studentWithImage = { id: doc.id, ...studentData };
-        const imageRef = await firestore.collection('images').doc(studentData.imagePath).get();
-        if (imageRef.exists) {
-            const imageData = imageRef.data();
-            studentWithImage.imageUrl = imageData.url;
-        }
-        fetchedStudents.push(studentWithImage);
-        }
+        const fetchedStudents = querySnapshot.docs.map((doc) => {
+            const studentData = doc.data();
+            return { id: doc.id, ...studentData };
+        });
         setStudents(fetchedStudents);
-    } catch (error) {
+        setFilteredStudents(fetchedStudents); // Initialize filtered students with all students
+        } catch (error) {
         console.error('Error fetching students: ', error);
-    }
+        }
+    };
+    
+    useEffect(() => {
+        fetchStudents();
+    }, []);
+    
+    useEffect(() => {
+        const filtered = students.filter((student) =>
+        student.fname.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredStudents(filtered);
+    }, [students, searchTerm]);
+    
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
     };
 
     const handleView = (student) => {
     setSelectedStudent(student);
     };
 
-    useEffect(() => {
-    fetchStudents();
-    }, []);
+
+
 return(
 <Layout>
     <div class="flex justify-between items-center px-2">
@@ -175,6 +187,9 @@ return(
                     Add Student
         </a>
     </div>
+
+
+
     <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-2 lg:py-14 mx-auto">
     {/* <!-- Card --> */}
     <div className="flex flex-col">
@@ -188,7 +203,7 @@ return(
                     
                 <label htmlFor="hs-as-table-product-review-search" className="sr-only">Search</label>
                 <div className="relative">
-                    <input type="text" id="hs-as-table-product-review-search" name="hs-as-table-product-review-search" className="py-2 px-3 pl-11 block w-full bg-white border border-gray-200 placeholder-gray-500 shadow-sm rounded-md text-sm text-gray-400 focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Search"/>
+                    <input onChange={handleSearch} value={searchTerm} type="text" id="hs-as-table-product-review-search" name="hs-as-table-product-review-search" className="py-2 px-3 pl-11 block w-full bg-white border border-gray-200 placeholder-gray-500 shadow-sm rounded-md text-sm text-gray-400 focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Search"/>
                     <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-4">
                         <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -361,7 +376,7 @@ return(
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {students.map((student) => (
+                {filteredStudents.map((student) => (
                 <tr  key={student.id}>
                     <td className="h-px w-px whitespace-nowrap">
                         <div className="pl-6 py-2">
