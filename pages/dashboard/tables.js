@@ -1,5 +1,13 @@
 import { FaUserGraduate, FaPhone, FaCommentAlt, FaUserPlus} from "react-icons/fa";
 import { useEffect, useState } from "react";
+import { firestore } from '../../firebase';
+import { storage } from '../../firebase';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
+
+
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -50,101 +58,213 @@ datasets: [
 };
 const Tables = () => {
 
-    const [fname, setFName] = useState("");
-const [lname, setLName] = useState("");
-const [age, setAge] = useState("");
-const [grade, setGrade] = useState("");
-const [phone, setPhone] = useState("");
-const [email, setEmail] = useState("");
+ //Add the students data to firestore
+const [fname, setFName] = useState('');
+const [lname, setLName] = useState('');
+const [age, setAge] = useState('');
+const [grade, setGrade] = useState('');
+const [phone, setPhone] = useState('');
+const [email, setEmail] = useState('');
 const [gender, setGender] = useState('');
-const [address, setAddress] = useState("");
-const [bio, setBio] = useState("");
+const [address, setAddress] = useState('');
+const [bio, setBio] = useState('');
+const [profileImage, setProfileImage] = useState(null);
 const [showAlert, setShowAlert] = useState(false);
 
-const handleSubmit = (e) => {
-e.preventDefault();
-const newStudent = { fname, lname, grade, phone, email, address, gender, age, bio };
 
-fetch("/api/students", {
-method: "POST",
-headers: {
-    "Content-Type": "application/json",
-},
-body: JSON.stringify(newStudent),
-})
-.then((response) => response.json())
-.then((data) => {
-    console.log("New student added:", data);
+const handleProfileImageChange = (event) => {
+    const file = event.target.files[0];
+    setProfileImage(file);
+};
+
+
+const handleSubmit = async (e) => {
+e.preventDefault();
+
+// Upload profile image to Firebase Storage
+const imageRef = storage.ref().child(profileImage.name);
+await imageRef.put(profileImage);
+const imageUrlu = await imageRef.getDownloadURL();
+
+
+const newStudent = {
+    fname,
+    lname,
+    age,
+    grade,
+    phone,
+    email,
+    gender,
+    address,
+    bio,
+    profileImage: imageUrlu,
+};
+
+firestore
+    .collection('students')
+    .add(newStudent)
+    .then((docRef) => {
+    console.log('New student added with ID: ', docRef.id);
     // Clear form fields
-    setFName("");
-    setLName("");
-    setAge("");
-    setPhone("");
-    setEmail("");
-    setGrade("");
-    setGender("");
-    setAddress("");
-    setBio("");
+    setFName('');
+    setLName('');
+    setAge('');
+    setPhone('');
+    setEmail('');
+    setGrade('');
+    setGender('');
+    setAddress('');
+    setBio('');
     // Show alert
     setShowAlert(true);
     // Refresh page after 3 seconds
     setTimeout(() => {
-    window.location.reload();
-    }, 1500);
-    console.log(`New student added: { id: ${data.id}, name: "${data.name}", grade: "${data.grade}", age: ${data.age} }`);
-});
-};
-const [students, setStudents] = useState([]);
-const [selectedStudent, setSelectedStudent] = useState(null);
-
-useEffect(() => {
-fetchStudents();
-}, []);
-
-const handleEdit = (student) => {
-setSelectedStudent(student);
+        window.location.reload();
+    }, 3000);
+    })
+    .catch((error) => {
+    console.error('Error adding student: ', error);
+    });
 };
 
-const handleDelete = (student) => {
-// Delete logic
-};
 
-const handleSave = (updatedStudent) => {
-fetch("/api/students", {
-method: "PUT",
-headers: {
-    "Content-Type": "application/json",
-},
-body: JSON.stringify(updatedStudent),
-})
-.then((response) => response.json())
-.then((data) => {
-    console.log(data.message);
-    // Refresh students list
+
+//Get the students data from firestore
+
+    const [students, setStudents] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredStudents, setFilteredStudents] = useState([]);
+    const [editingStudentId, setEditingStudentId] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+    name: '',
+    age: '',
+    });
+
+    const fetchStudents = async () => {
+    try {
+        const querySnapshot = await firestore.collection('students').get();
+        const fetchedStudents = querySnapshot.docs.map((doc) => {
+        const studentData = doc.data();
+        return { id: doc.id, ...studentData };
+        });
+        setStudents(fetchedStudents);
+        setFilteredStudents(fetchedStudents); // Initialize filtered students with all students
+    } catch (error) {
+        console.error('Error fetching students: ', error);
+    }
+    };
+
+    const deleteStudent = async (studentId) => {
+    try {
+        await firestore.collection('students').doc(studentId).delete();
+        console.log('Student deleted successfully');
+        // Perform any additional actions or UI updates after successful deletion
+    } catch (error) {
+        console.error('Error deleting student: ', error);
+    }
+    };
+
+    const updateStudent = (studentId, updatedData) => {
+    // Implement your logic to update the student data
+    console.log(`Updating student ${studentId} with data: `, updatedData);
+    };
+
+    const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    };
+
+    const handleView = (student) => {
+    setSelectedStudent(student);
+    };
+
+    const handleDelete = async (studentId) => {
+    try {
+        await deleteStudent(studentId);
+        toast.success('Student is deleted');
+        window.location.reload();
+    } catch (error) {
+        console.error('Error deleting student: ', error);
+        // Handle error and display appropriate feedback to the user
+    }
+    };
+
+    const handleEdit = (student) => {
+    setEditingStudentId(student.id);
+    setEditFormData({
+        name: student.name,
+        age: student.age,
+    });
+    };
+
+    const cancelEdit = () => {
+    setEditingStudentId(null);
+    setEditFormData({
+        name: '',
+        age: '',
+    });
+    };
+
+    const handleUpdate = (e) => {
+    e.preventDefault();
+    updateStudent(editingStudentId, editFormData);
+    setEditingStudentId(null);
+    setEditFormData({
+        name: '',
+        age: '',
+    });
+    };
+
+    const enterEditMode = () => {
+        setIsEditing(true);
+    };
+
+    // const handleEditFormChange = (e) => {
+    // const { name, value } = e.target;
+    // const { age} = e.target;
+    // setEditFormData((prevState) => ({
+    //     ...prevState,
+    //     [name]: value,
+    //     [age]: value,
+    // }));
+    // };
+
+    useEffect(() => {
     fetchStudents();
-    setSelectedStudent(null);
-});
-};
+    }, []);
 
-const fetchStudents = () => {
-fetch("/api/students")
-.then((response) => response.json())
-.then((data) => setStudents(data));
-};
-const [circumference, setCircumference] = useState(0);
-const TotalClasses = 305;
-const AttendedClasses = 280;
-const percentage = (AttendedClasses/TotalClasses)*100;
-const Percent = Math.round(percentage);
-useEffect(() => {
-  setCircumference(50 * 2 * Math.PI);
-}, []);
+    useEffect(() => {
+    const filtered = students.filter((student) =>
+        student.fname.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredStudents(filtered);
+    }, [students, searchTerm]);
+
+    useEffect(() => {
+    setEditFormData({
+        name: selectedStudent?.fname || '',
+        age: selectedStudent?.age || '',
+    });
+    }, [selectedStudent]);
+
+
+    //The circumference being used for the attendance chart
+    const [circumference, setCircumference] = useState(0);
+    const TotalClasses = 305;
+    const AttendedClasses = 280;
+    const percentage = (AttendedClasses/TotalClasses)*100;
+    const Percent = Math.round(percentage);
+    useEffect(() => {
+    setCircumference(50 * 2 * Math.PI);
+    }, []);
 
 
 
     return(
         <main>
             <div>
+            <ToastContainer />
                 {/* Alert message */}
                     {showAlert && (
                         <div className="fixed top-4 z-50 right-4 p-4 bg-blue-500 text-white rounded-md shadow-lg transition duration-500 ease-in-out">
@@ -181,7 +301,7 @@ useEffect(() => {
                             
                         <label htmlFor="hs-as-table-product-review-search" className="sr-only">Search</label>
                         <div className="relative">
-                            <input type="text" id="hs-as-table-product-review-search" name="hs-as-table-product-review-search" className="py-2 px-3 pl-11 block w-full bg-white border border-gray-200 placeholder-gray-500 shadow-sm rounded-md text-sm text-gray-400 focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Search"/>
+                            <input onChange={handleSearch} value={searchTerm} type="text" id="hs-as-table-product-review-search" name="hs-as-table-product-review-search" className="py-2 px-3 pl-11 block w-full bg-white border border-gray-200 placeholder-gray-500 shadow-sm rounded-md text-sm text-gray-400 focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400" placeholder="Search"/>
                             <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-4">
                                 <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -267,15 +387,15 @@ useEffect(() => {
                                 </label>
                                 <label htmlFor="hs-as-filters-dropdown-paid" className="flex py-2.5 px-3">
                                     <input type="checkbox" className="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-as-filters-dropdown-paid"/>
-                                    <span className="ml-3 text-sm text-gray-800 dark:text-gray-200">Paid</span>
+                                    <span className="ml-3 text-sm text-gray-800 dark:text-gray-200">Male</span>
                                 </label>
                                 <label htmlFor="hs-as-filters-dropdown-pending" className="flex py-2.5 px-3">
                                     <input type="checkbox" className="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-as-filters-dropdown-pending"/>
-                                    <span className="ml-3 text-sm text-gray-800 dark:text-gray-200">Pending</span>
+                                    <span className="ml-3 text-sm text-gray-800 dark:text-gray-200">Female</span>
                                 </label>
                                 <label htmlFor="hs-as-filters-dropdown-declined" className="flex py-2.5 px-3">
                                     <input type="checkbox" className="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 pointer-events-none focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-as-filters-dropdown-declined"/>
-                                    <span className="ml-3 text-sm text-gray-800 dark:text-gray-200">Declined</span>
+                                    <span className="ml-3 text-sm text-gray-800 dark:text-gray-200">Grade</span>
                                 </label>
                                 </div>
                                 </div>
@@ -359,7 +479,7 @@ useEffect(() => {
                         </thead>
 
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {students.map((student) => (
+                        {filteredStudents.map((student) => (
                         <tr  key={student.id}>
                             <td className="h-px w-px whitespace-nowrap">
                                 <div className="pl-6 py-2">
@@ -377,7 +497,7 @@ useEffect(() => {
                             <td class="h-px w-px whitespace-nowrap">
                             <div class="pl-6 lg:pl-3 xl:pl-0 pr-6 py-3">
                                 <div class="flex items-center gap-x-3">
-                                <img class="inline-block h-[2.375rem] w-[2.375rem] rounded-full" src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description"/>
+                                <img class="inline-block h-[2.375rem] w-[2.375rem] object-cover rounded-full" src={student.profileImage} alt="Image Description"/>
                                 <div class="grow">
                                     <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">{student.fname} {student.lname}</span>
                                 </div>
@@ -417,7 +537,7 @@ useEffect(() => {
                                 <div className="group inline-flex items-center divide-x divide-gray-300 border border-gray-300 bg-white shadow-sm rounded-md transition-all dark:divide-gray-700 dark:bg-slate-700 dark:border-gray-700">
                                 <div className="inline-block">
                                 <a class="block" href="javascript:;" data-hs-overlay="#hs-ai-invoice-modal">
-                                <div class="py-1 px-2 inline-flex justify-center items-center gap-2 rounded-l-md border-1 font-medium bg-white text-gray-700 align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all hover:bg-gray-50 text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white">
+                                <div onClick={() => handleView(student)} class="py-1 px-2 inline-flex justify-center items-center gap-2 rounded-l-md border-1 font-medium bg-white text-gray-700 align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all hover:bg-gray-50 text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white">
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27zm.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0l-.509-.51z"/>
                                     <path d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"/>
@@ -437,20 +557,20 @@ useEffect(() => {
                                         <span className="block py-2 px-3 text-xs font-medium uppercase text-gray-400 dark:text-gray-600">
                                             Options
                                         </span>
-                                        <a className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#">
+                                        <span  onClick={() => handleDelete(student.id)} className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
                                             <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                             <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
                                             <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
                                             </svg>
-                                            Copy
-                                        </a>
-                                        <a className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#">
+                                            Delete
+                                        </span>
+                                        <span className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#">
                                             <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                             <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
                                             <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
                                             </svg>
-                                            Print
-                                        </a>
+                                            Edit
+                                        </span>
                                     </div>
                                     <div className="py-2 first:pt-0 last:pb-0">
                                         <span className="block py-2 px-3 text-xs font-medium uppercase text-gray-400 dark:text-gray-600">
@@ -537,7 +657,8 @@ useEffect(() => {
             {/* <!-- End Table Section --> */}
 
             
-    {/* <!-- Modal --> */}
+        {/* <!-- Modal --> */}
+        {selectedStudent && (
     <div id="hs-ai-invoice-modal" class="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
     <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
         <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-gray-800">
@@ -561,11 +682,11 @@ useEffect(() => {
             </figure>
             {/* <!-- End SVG Background Element --> */}
         </div>
-
+        
         <div class="relative z-10 -mt-12">
             {/* <!-- Icon --> */}
             <span class="mx-auto flex justify-center items-center w-[62px] h-[62px] rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
-            <img class="rounded-full" src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description"/>
+            <img class="rounded-full" src={selectedStudent.profileImage} alt="Image Description"/>
             </span>
             {/* <!-- End Icon --> */}
         </div>
@@ -573,8 +694,18 @@ useEffect(() => {
         {/* <!-- Body --> */}
         <div class="p-4 sm:p-7 overflow-y-auto">
             <div class="text-center">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Berack Kaunda
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {isEditing ? (
+                    <input
+                    type="text"
+                    name="name"
+                    value={editFormData.name}
+                    onChange={handleEditFormChange}
+                    className="w-full p-2 border rounded"
+                    />
+                ) : (
+                    `${selectedStudent.fname} ${selectedStudent.lname}`
+                )}
             </h3>
             <p class="text-sm text-blue-600">
                 ID: #3682303
@@ -589,29 +720,72 @@ useEffect(() => {
             </div>
         </div>
         
+
+
+        {isEditing ? (
+        <div className="flex justify-center mt-4">
+            <button
+            onClick={handleUpdate}
+            className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+            >
+            Save
+            </button>
+            <button
+            onClick={cancelEdit}
+            className="bg-gray-500 text-white px-4 py-2 rounded"
+            >
+            Cancel
+            </button>
+        </div>
+        ) : (
+        <button
+            onClick={enterEditMode}
+            className="bg-gray-500 text-white px-4 py-2 rounded"
+        >
+            Edit
+        </button>
+        )}
+
+
+
+
+
         *{/* <!-- Grid --> */}
             <div class="mt-5 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-2 justify-center">
             <div>
                 <span class="block text-xs uppercase text-gray-500">Class:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">Grade 4</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.grade}</span>
             </div>
             {/* <!-- End Col --> */}
 
             <div>
                 <span class="block text-xs uppercase text-gray-500">Gender:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">Male</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.gender}</span>
             </div>
             {/* <!-- End Col --> */}
 
             <div>
-                <span class="block text-xs uppercase text-gray-500">Age:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">12</span>
+            {isEditing ? (
+                    <input
+                    type="text"
+                    name="age"
+                    value={editFormData.age}
+                    onChange={handleEditFormChange}
+                    className="w-full p-2 border rounded"
+                    />
+                ) : (
+                <div>
+                    <span class="block text-xs uppercase text-gray-500">Age:</span>
+                    <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.age}</span>
+                </div>
+                )}
+                
             </div>
             {/* <!-- End Col --> */}
 
             <div>
                 <span class="block text-xs uppercase text-gray-500">Address:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">123 Main St, City, State</span>
+                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.address}</span>
             </div>
             {/* <!-- End Col --> */}
 
@@ -621,10 +795,7 @@ useEffect(() => {
             <div class="mt-5 sm:mt-10">
                 <h4 class="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">About</h4>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Sarah is a hardworking student who takes her studies seriously. 
-                She is always eager to participate in class discussions 
-                and is not afraid to ask questions when she doesn't understand something. 
-                Her positive attitude and enthusiasm inspire those around her.
+                {selectedStudent.bio}
                 </p>
             </div>
             {/* Student Productiviy/Attendance */}
@@ -687,6 +858,7 @@ useEffect(() => {
         </div>
     </div>
     </div>
+    )}
     {/* <!-- End Modal --> */}
 
 

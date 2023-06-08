@@ -141,26 +141,51 @@ firestore
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredStudents, setFilteredStudents] = useState([]);
+    const [editedStudent, setEditedStudent] = useState(null);
     
     
+      // Fetch students from Firestore
     const fetchStudents = async () => {
         try {
-        const querySnapshot = await firestore.collection('students').get();
-        const fetchedStudents = querySnapshot.docs.map((doc) => {
-            const studentData = doc.data();
-            return { id: doc.id, ...studentData };
-        });
-        setStudents(fetchedStudents);
-        setFilteredStudents(fetchedStudents); // Initialize filtered students with all students
+        const studentsRef = firestore.collection('students');
+        const snapshot = await studentsRef.get();
+        const studentsData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        setStudents(studentsData);
         } catch (error) {
         console.error('Error fetching students: ', error);
         }
     };
-    
+
     useEffect(() => {
         fetchStudents();
     }, []);
-    
+
+    const handleEdit = () => {
+        setEditedStudent(selectedStudent);
+    };
+
+    const handleSave = async () => {
+        try {
+        // Update the student data in Firestore using the editedStudent object
+        await firestore
+            .collection('students')
+            .doc(selectedStudent.id)
+            .update(editedStudent);
+
+        // Refresh the student data
+        fetchStudents();
+        setSelectedStudent(null);
+        setEditedStudent(null);
+        } catch (error) {
+        console.error('Error updating student: ', error);
+        }
+    };
+
+
+
     useEffect(() => {
         const filtered = students.filter((student) =>
         student.fname.toLowerCase().includes(searchTerm.toLowerCase())
@@ -367,9 +392,9 @@ return(
                     </th>
                     <th scope="col" className="px-6 py-3 text-center">
                         <div className="flex items-center gap-x-2">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
-                        View Details
-                        </span>
+                            <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            View Details
+                            </span>
                         </div>
                     </th>
                 </tr>
@@ -394,7 +419,7 @@ return(
                     <td class="h-px w-px whitespace-nowrap">
                     <div class="pl-6 lg:pl-3 xl:pl-0 pr-6 py-3">
                         <div class="flex items-center gap-x-3">
-                            <img class="inline-block h-[2.375rem] w-[2.375rem] rounded-full" src={student.profileImage} alt="Image Description"/>
+                            <img class="inline-block h-10 w-10 object-cover rounded-full" src={student.profileImage} alt="Image Description"/>
                         
                         <div class="grow">
                             <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">{student.fname} {student.lname}</span>
@@ -455,12 +480,12 @@ return(
                                 <span className="block py-2 px-3 text-xs font-medium uppercase text-gray-400 dark:text-gray-600">
                                     Options
                                 </span>
-                                <a className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#">
+                                <a href="javascript:;" data-hs-overlay="#hs-ai-edit-modal" className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#">
                                     <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
                                     <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
                                     </svg>
-                                    Copy
+                                    Edit Data
                                 </a>
                                 <a className="flex items-center gap-x-3 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#">
                                     <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -554,12 +579,27 @@ return(
     </div>
     {/* <!-- End Table Section --> */}
 
-    {/* <!-- Modal --> */}
-    {selectedStudent && (
+
+
+
+
+
+
+
+ {/* <!-- Modal --> */}
+ {selectedStudent && (
     <div id="hs-ai-invoice-modal" class="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
     <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
         <div class="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-gray-800">
         <div class="relative overflow-hidden min-h-[8rem] bg-gray-900 text-center rounded-t-xl">
+        <div class="absolute top-2 left-2">
+                <button
+                    type="button"
+                    className="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-blue-500 text-lg hover:underline hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all dark:focus:ring-gray-700 dark:focus:ring-offset-gray-800"
+                    onClick={handleEdit}
+                    > Edit
+            </button>
+            </div>
             {/* <!-- Close Button --> */}
             <div class="absolute top-2 right-2">
             <button type="button" class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all text-sm dark:focus:ring-gray-700 dark:focus:ring-offset-gray-800" data-hs-overlay="#hs-bg-gray-on-hover-cards" data-hs-remove-element="#hs-ai-modal">
@@ -591,9 +631,36 @@ return(
         {/* <!-- Body --> */}
         <div class="p-4 sm:p-7 overflow-y-auto">
             <div class="text-center">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            {selectedStudent.fname} {selectedStudent.lname}
-            </h3>
+            {editedStudent !== null ? (
+            <div className="flex justify-center">
+                <input
+                type="text"
+                className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                value={editedStudent.fname}
+                onChange={(e) =>
+                    setEditedStudent({
+                    ...editedStudent,
+                    fname: e.target.value,
+                    })
+                }
+                />
+                <input
+                type="text"
+                className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                value={editedStudent.lname}
+                onChange={(e) =>
+                    setEditedStudent({
+                    ...editedStudent,
+                    lname: e.target.value,
+                    })
+                }
+                />
+            </div>
+            ) : (
+            <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {selectedStudent.fname} {selectedStudent.lname}
+            </span>
+            )}
             <p class="text-sm text-blue-600">
                 ID: #3682303
             </p>
@@ -606,40 +673,117 @@ return(
                 </div>
             </div>
         </div>
-        
-        *{/* <!-- Grid --> */}
-            <div class="mt-5 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-2 justify-center">
+
+            {/* <!-- Grid --> */}
+            <div className="mt-5 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-2 justify-center">
             <div>
-                <span class="block text-xs uppercase text-gray-500">Class:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.grade}</span>
+                <span className="block text-xs uppercase text-gray-500">Class:</span>
+                {editedStudent !== null ? (
+                <input
+                    type="text"
+                    className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                    value={editedStudent.grade}
+                    onChange={(e) =>
+                    setEditedStudent({
+                        ...editedStudent,
+                        grade: e.target.value,
+                    })
+                    }
+                />
+                ) : (
+                <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {selectedStudent.grade}
+                </span>
+                )}
             </div>
             {/* <!-- End Col --> */}
 
             <div>
-                <span class="block text-xs uppercase text-gray-500">Gender:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.gender}</span>
+                <span className="block text-xs uppercase text-gray-500">Gender:</span>
+                <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {editedStudent !== null ? (
+                    <input
+                    type="text"
+                    className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                    value={editedStudent.gender}
+                    onChange={(e) =>
+                        setEditedStudent({
+                        ...editedStudent,
+                        gender: e.target.value,
+                        })
+                    }
+                    />
+                ) : (
+                    selectedStudent.gender
+                )}
+                </span>
             </div>
             {/* <!-- End Col --> */}
 
             <div>
-                <span class="block text-xs uppercase text-gray-500">Age:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.age}</span>
+                <span className="block text-xs uppercase text-gray-500">Age:</span>
+                <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {editedStudent !== null ? (
+                    <input
+                    type="text"
+                    className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                    value={editedStudent.age}
+                    onChange={(e) =>
+                        setEditedStudent({
+                        ...editedStudent,
+                        age: e.target.value,
+                        })
+                    }
+                    />
+                ) : (
+                    selectedStudent.age
+                )}
+                </span>
             </div>
             {/* <!-- End Col --> */}
 
             <div>
-                <span class="block text-xs uppercase text-gray-500">Address:</span>
-                <span class="block text-sm font-medium text-gray-800 dark:text-gray-200">{selectedStudent.address}</span>
+                <span className="block text-xs uppercase text-gray-500">Address:</span>
+                <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {editedStudent !== null ? (
+                    <input
+                    type="text"
+                    className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                    value={editedStudent.address}
+                    onChange={(e) =>
+                        setEditedStudent({
+                        ...editedStudent,
+                        address: e.target.value,
+                        })
+                    }
+                    />
+                ) : (
+                    selectedStudent.address
+                )}
+                </span>
             </div>
             {/* <!-- End Col --> */}
-
             </div>
             {/* <!-- End Grid --> */}
 
+
             <div class="mt-5 sm:mt-10">
                 <h4 class="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">About</h4>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {selectedStudent.bio}
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                {editedStudent !== null ? (
+                    <textarea
+                    className="mt-2 w-full text-sm text-gray-600 dark:text-gray-400 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                    value={editedStudent.bio}
+                    onChange={(e) =>
+                        setEditedStudent({
+                        ...editedStudent,
+                        bio: e.target.value,
+                        })
+                    }
+                    />
+                ) : (
+                    selectedStudent.bio
+                )}
                 </p>
             </div>
             {/* Student Productiviy/Attendance */}
@@ -697,6 +841,18 @@ return(
                     <p className="ml-2 text-blue-600 font-semibold text-lg">+ 30 more</p>
                 </div>
                 </div>
+
+
+            {editedStudent && (
+            <div className="mt-5 flex justify-center gap-x-2">
+                <button onClick={() => setEditedStudent(null)} type="button" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+                    Cancel
+                </button>
+                <button  data-hs-overlay="#hs-ai-invoice-modal" onClick={handleSave} type="submit" className="py-2 px-3 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">
+                    Update Details
+                </button>
+            </div>
+            )}
             </div>
         {/* <!-- End Body --> */}
         </div>
@@ -704,6 +860,161 @@ return(
     </div>
     )}
     {/* <!-- End Modal --> */}
+
+
+
+
+
+            {/* Render student details in modal */}
+            {selectedStudent && (
+            <div id="hs-ai-edit-modal" className="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
+            <div className="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+                <div className="relative flex flex-col bg-white shadow-lg rounded-xl dark:bg-gray-800">
+                <div className="relative overflow-hidden min-h-[8rem] bg-gray-900 text-center rounded-t-xl">
+                    {/* Close Button */}
+                    <div className="absolute top-2 right-2">
+                    <button
+                        type="button"
+                        className="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all text-sm dark:focus:ring-gray-700 dark:focus:ring-offset-gray-800"
+                        data-hs-overlay="#hs-bg-gray-on-hover-cards"
+                        data-hs-remove-element="#hs-ai-modal"
+                    >
+                        <span className="sr-only">Close</span>
+                    </button>
+                    </div>
+                    {/* End Close Button */}
+                </div>
+
+                <div className="relative z-10 -mt-12">
+                    {/* Icon */}
+                    <span className="mx-auto flex justify-center items-center w-[62px] h-[62px] rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
+                    <img className="rounded-full" src={selectedStudent.profileImage} alt="Image Description" />
+                    </span>
+                    {/* End Icon */}
+                </div>
+
+                {/* Body */}
+                <div className="p-4 sm:p-7 overflow-y-auto">
+                    <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        {selectedStudent.fname} {selectedStudent.lname}
+                    </h3>
+                    <p className="text-sm text-blue-600">ID: #3682303</p>
+                    <div className="flex space-x-2 justify-center px-6 py-2">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-300/30">
+                        <FaPhone className="text-gray-800 text-sm" />
+                        </div>
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-300/30">
+                        <FaCommentAlt className="text-gray-800 text-sm" />
+                        </div>
+                    </div>
+                    </div>
+
+                    {/* Grid */}
+                    <div className="mt-5 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-2 justify-center">
+                    <div>
+                        <span className="block text-xs uppercase text-gray-500">Class:</span>
+                        <input
+                        type="text"
+                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                        value={editedStudent ? editedStudent.grade : selectedStudent.grade}
+                        onChange={(e) =>
+                            setEditedStudent({
+                            ...editedStudent,
+                            grade: e.target.value,
+                            })
+                        }
+                        />
+                    </div>
+                    {/* End Col */}
+
+                    <div>
+                        <span className="block text-xs uppercase text-gray-500">Gender:</span>
+                        <input
+                        type="text"
+                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                        value={editedStudent ? editedStudent.gender : selectedStudent.gender}
+                        onChange={(e) =>
+                            setEditedStudent({
+                            ...editedStudent,
+                            gender: e.target.value,
+                            })
+                        }
+                        />
+                    </div>
+                    {/* End Col */}
+
+                    <div>
+                        <span className="block text-xs uppercase text-gray-500">Age:</span>
+                        <input
+                        type="text"
+                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                        value={editedStudent ? editedStudent.age : selectedStudent.age}
+                        onChange={(e) =>
+                            setEditedStudent({
+                            ...editedStudent,
+                            age: e.target.value,
+                            })
+                        }
+                        />
+                    </div>
+                    {/* End Col */}
+
+                    <div>
+                        <span className="block text-xs uppercase text-gray-500">Address:</span>
+                        <input
+                        type="text"
+                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                        value={editedStudent ? editedStudent.address : selectedStudent.address}
+                        onChange={(e) =>
+                            setEditedStudent({
+                            ...editedStudent,
+                            address: e.target.value,
+                            })
+                        }
+                        />
+                    </div>
+                    {/* End Col */}
+                    </div>
+                    {/* End Grid */}
+
+                    <div className="mt-5 sm:mt-10">
+                    <h4 className="text-xs font-semibold capitalize text-gray-800 dark:text-gray-200">About</h4>
+                    <textarea
+                        className="mt-2 text-sm text-gray-600 dark:text-gray-400 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                        value={editedStudent ? editedStudent.bio : selectedStudent.bio}
+                        onChange={(e) =>
+                        setEditedStudent({
+                            ...editedStudent,
+                            bio: e.target.value,
+                        })
+                        }
+                    ></textarea>
+                    </div>
+                    {/* Student Productivity/Attendance */}
+
+                    {/* Save and Cancel buttons */}
+                    <div className="flex justify-center mt-8 space-x-4">
+                    <button
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                        onClick={handleSave}
+                    >
+                        Save
+                    </button>
+                    <button
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                        onClick={() => setEditedStudent(null)}
+                    >
+                        Cancel
+                    </button>
+                    </div>
+                </div>
+                {/* End Body */}
+                </div>
+            </div>
+            </div>
+        )}
+        {/* End Modal */}
 
 
 {/* <!-- Add student Modal --> */}
