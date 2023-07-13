@@ -34,6 +34,14 @@ The dashboard features a notice board and a calendar to keep you updated on upco
 
 In addition to viewing data, you can easily add new students and teachers to the system. This feature simplifies the process of managing your school's student and teacher information, ensuring that your database remains up-to-date.
 
+
+# Screenshots
+![Modern Elegent School Management Dashboard](1.png)
+![Modern Elegent School Management Dashboard](2.png)
+![Modern Elegent School Management Dashboard](3.png)
+![Modern Elegent School Management Dashboard](4.png)
+![Modern Elegent School Management Dashboard](5.png)
+
 ## System Design
 
 The School Management Dashboard is designed with simplicity, usability, and scalability in mind. The system architecture follows a client-server model, with the following components:
@@ -49,4 +57,6 @@ The School Management Dashboard is designed with simplicity, usability, and scal
 4. Authentication and Security: The system incorporates authentication mechanisms to ensure that only authorized users can access the dashboard and perform specific actions. This protects sensitive information and maintains data privacy.
 
 ![The system design](system-design.png)
+
+
 
